@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
             console.log('Processing .xlsx file');
             workbookExcelJS = new ExcelJS.Workbook();
             const nodeBuffer = Buffer.from(fileBuffer);
+            // @ts-expect-error - Node.js Buffer<ArrayBuffer> is not assignable to ExcelJS's expected Buffer type due to library type definition differences
             await workbookExcelJS.xlsx.load(nodeBuffer);
             worksheet = workbookExcelJS.worksheets[0];
 
