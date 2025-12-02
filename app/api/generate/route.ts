@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
             console.log('Processing .xlsx file');
             workbookExcelJS = new ExcelJS.Workbook();
             const nodeBuffer = Buffer.from(fileBuffer);
+            // @ts-expect-error - Buffer type incompatibility between Node.js types and exceljs
             await workbookExcelJS.xlsx.load(nodeBuffer);
             worksheet = workbookExcelJS.worksheets[0];
 
