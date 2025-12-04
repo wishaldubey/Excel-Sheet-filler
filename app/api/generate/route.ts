@@ -90,8 +90,10 @@ export async function POST(request: NextRequest) {
             // Handle .xlsx files using ExcelJS
             console.log('Processing .xlsx file');
             workbookExcelJS = new ExcelJS.Workbook();
-            const nodeBuffer = Buffer.from(fileBuffer);
-            await workbookExcelJS.xlsx.load(nodeBuffer);
+
+            const uint8Array = new Uint8Array(fileBuffer);
+            await (workbookExcelJS.xlsx as any).load(uint8Array as any);
+
             worksheet = workbookExcelJS.worksheets[0];
 
             if (!worksheet) {
