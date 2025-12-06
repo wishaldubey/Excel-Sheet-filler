@@ -11,6 +11,7 @@ export default function Home() {
     const [previewData, setPreviewData] = useState<EmployeeData[]>([]);
     const [isGenerating, setIsGenerating] = useState<boolean>(false);
     const [rowCount, setRowCount] = useState<number>(5);
+    const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
     // Update preview whenever inputs change
     useEffect(() => {
@@ -67,12 +68,15 @@ export default function Home() {
             const a = document.createElement('a');
             a.href = url;
 
-            // Use uploaded file name with 'output_' prefix
+            // Use uploaded file name with 'output_' prefix and force .xlsx extension
             const originalName = uploadedFile.name;
             const baseName = originalName.startsWith('output_')
                 ? originalName.substring('output_'.length)
                 : originalName;
-            const outputFileName = `output_${baseName}`;
+
+            // Remove existing extension and add .xlsx
+            const nameWithoutExt = baseName.replace(/\.(xlsx?|xls)$/i, '');
+            const outputFileName = `output_${nameWithoutExt}.xlsx`;
             a.download = outputFileName;
             document.body.appendChild(a);
             a.click();
@@ -186,10 +190,20 @@ export default function Home() {
                 </div>
 
                 <div className={styles.previewSection}>
-                    <h2 className={styles.previewTitle}>Live Preview</h2>
-                    <p className={styles.previewSubtitle}>
-                        Showing {previewData.length} row{previewData.length !== 1 ? 's' : ''}
-                    </p>
+                    <div className={styles.previewHeader}>
+                        <div>
+                            <h2 className={styles.previewTitle}>Live Preview</h2>
+                            <p className={styles.previewSubtitle}>
+                                Showing {previewData.length} row{previewData.length !== 1 ? 's' : ''}
+                            </p>
+                        </div>
+                        <button
+                            className={styles.editButton}
+                            onClick={() => setIsEditMode(!isEditMode)}
+                        >
+                            {isEditMode ? '✓ Done' : '✏️ Edit'}
+                        </button>
+                    </div>
 
                     <div className={styles.tableWrapper}>
                         <table className={styles.table}>
@@ -212,18 +226,191 @@ export default function Home() {
                             <tbody>
                                 {previewData.map((employee, index) => (
                                     <tr key={index}>
-                                        <td>{employee.employeeCode}</td>
-                                        <td>{employee.firstName}</td>
-                                        <td>{employee.lastName}</td>
-                                        <td>{employee.gender}</td>
-                                        <td>{employee.dob}</td>
-                                        <td>{employee.dateOfJoining}</td>
-                                        <td>{employee.email}</td>
-                                        <td>{employee.mobile}</td>
-                                        <td>{employee.suminsured}</td>
-                                        <td>{employee.relationship}</td>
-                                        <td>{employee.shouldVerifyEmail}</td>
-                                        <td>{employee.defaultPassword}</td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.employeeCode}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].employeeCode = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.employeeCode
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.firstName}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].firstName = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.firstName
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.lastName}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].lastName = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.lastName
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <select
+                                                    className={styles.editSelect}
+                                                    value={employee.gender}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].gender = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                >
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            ) : (
+                                                employee.gender
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.dob}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].dob = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.dob
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.dateOfJoining}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].dateOfJoining = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.dateOfJoining
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.email}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].email = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.email
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.mobile}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].mobile = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.mobile
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    type="number"
+                                                    value={employee.suminsured}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].suminsured = Number(e.target.value);
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.suminsured
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.relationship}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].relationship = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.relationship
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.shouldVerifyEmail}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].shouldVerifyEmail = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.shouldVerifyEmail
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={styles.editInput}
+                                                    value={employee.defaultPassword}
+                                                    onChange={(e) => {
+                                                        const updated = [...previewData];
+                                                        updated[index].defaultPassword = e.target.value;
+                                                        setPreviewData(updated);
+                                                    }}
+                                                />
+                                            ) : (
+                                                employee.defaultPassword
+                                            )}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
