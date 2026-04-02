@@ -172,7 +172,7 @@ export default function Home() {
                                     setRowCount(0);
                                     return;
                                 }
-                                const clamped = Math.min(50, Math.max(0, value));
+                                const clamped = Math.min(50000, Math.max(0, value));
                                 setRowCount(clamped);
                             }}
                             min="0"
