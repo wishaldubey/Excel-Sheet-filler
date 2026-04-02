@@ -16,7 +16,9 @@ export default function Home() {
     // Update preview whenever inputs change
     useEffect(() => {
         const preview: EmployeeData[] = [];
-        for (let i = 0; i < rowCount; i++) {
+        // Cap the live preview at 100 rows to prevent massive memory usage and 'Request Entity Too Large' (413) errors
+        const previewCount = Math.min(rowCount, 100);
+        for (let i = 0; i < previewCount; i++) {
             preview.push(generateEmployeeData(gender, suminsured));
         }
         setPreviewData(preview);
@@ -47,8 +49,8 @@ export default function Home() {
             formData.append('gender', gender);
             formData.append('suminsured', suminsured.toString());
             formData.append('rows', rowCount.toString());
-            // Send preview so backend writes exactly these rows
-            formData.append('preview', JSON.stringify(previewData.slice(0, rowCount)));
+            // Send only the generated preview rows (capped) to avoid large payload errors
+            formData.append('preview', JSON.stringify(previewData));
 
             const response = await fetch('/api/generate', {
                 method: 'POST',
@@ -56,8 +58,15 @@ export default function Home() {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to generate Excel file');
+                // Check if the response is actually JSON before parsing (to avoid "Unexpected token 'R'" on 413 HTML responses)
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to generate Excel file');
+                } else {
+                    const text = await response.text();
+                    throw new Error(`Server Error (${response.status}): ${text.substring(0, 100)}...`);
+                }
             }
 
             // Convert response to blob
@@ -194,7 +203,7 @@ export default function Home() {
                         <div>
                             <h2 className={styles.previewTitle}>Live Preview</h2>
                             <p className={styles.previewSubtitle}>
-                                Showing {previewData.length} row{previewData.length !== 1 ? 's' : ''}
+                                Showing {previewData.length} row{previewData.length !== 1 ? 's' : ''} {rowCount > 100 ? `(out of ${rowCount})` : ''}
                             </p>
                         </div>
                         <button
