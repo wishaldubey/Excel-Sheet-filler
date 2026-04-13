@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Hard cap to 50 rows on the backend as a safety guard
-        rowsToFill = Math.min(50000, rowsToFill);
+        rowsToFill = Math.min(200000, rowsToFill);
 
         console.log('File name:', file.name);
         console.log('File type:', file.type);
