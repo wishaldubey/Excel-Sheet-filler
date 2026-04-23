@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
         const suminsured = formData.get('suminsured') as string;
         const rowsToFillRaw = formData.get('rows') as string | null;
         const previewRaw = formData.get('preview') as string | null;
+        const empCodeLengthRaw = formData.get('empCodeLength') as string | null;
+        const empCodeFormatRaw = formData.get('empCodeFormat') as string | null;
+        const empCodeLength = empCodeLengthRaw ? Number(empCodeLengthRaw) : 9;
+        const empCodeFormat = empCodeFormatRaw || 'alphanumeric';
 
         // Validate inputs
         if (!file) {
@@ -143,7 +147,7 @@ export async function POST(request: NextRequest) {
             const previewIndex = rowIndex - startRow;
             const previewEmployee = previewRows && previewRows[previewIndex];
 
-            const employeeCode = previewEmployee?.employeeCode ?? generateEmployeeCode();
+            const employeeCode = previewEmployee?.employeeCode ?? generateEmployeeCode(empCodeLength, empCodeFormat);
             const employeeGender = previewEmployee?.gender ?? gender;
             const firstName = previewEmployee?.firstName ?? generateRandomFirstName(employeeGender);
             const lastName = previewEmployee?.lastName ?? generateRandomLastName();

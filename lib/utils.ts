@@ -17,9 +17,20 @@ export function generateRandomDigits(count: number): string {
     return result;
 }
 
-// Generate random employee code: 5 uppercase letters + 4 digits
-export function generateEmployeeCode(): string {
-    return generateRandomLetters(5) + generateRandomDigits(4);
+// Generate random employee code
+export function generateEmployeeCode(length: number = 9, format: string = 'alphanumeric'): string {
+    if (format === 'alphabet') {
+        return generateRandomLetters(length);
+    } else if (format === 'numeric') {
+        return generateRandomDigits(length);
+    } else {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
 }
 
 // Generate random first name
@@ -94,8 +105,13 @@ export interface EmployeeData {
     defaultPassword: string;
 }
 
-export function generateEmployeeData(gender: string, suminsured: number): EmployeeData {
-    const employeeCode = generateEmployeeCode();
+export function generateEmployeeData(
+    gender: string, 
+    suminsured: number,
+    empCodeLength: number = 9,
+    empCodeFormat: string = 'alphanumeric'
+): EmployeeData {
+    const employeeCode = generateEmployeeCode(empCodeLength, empCodeFormat);
     return {
         employeeCode,
         firstName: generateRandomFirstName(gender),

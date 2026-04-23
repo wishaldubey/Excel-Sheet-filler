@@ -11,6 +11,8 @@ export default function Home() {
     const [previewData, setPreviewData] = useState<EmployeeData[]>([]);
     const [isGenerating, setIsGenerating] = useState<boolean>(false);
     const [rowCount, setRowCount] = useState<number>(5);
+    const [empCodeLength, setEmpCodeLength] = useState<number>(9);
+    const [empCodeFormat, setEmpCodeFormat] = useState<string>('alphanumeric');
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
     // Update preview whenever inputs change
@@ -19,10 +21,10 @@ export default function Home() {
         // Cap the live preview at 100 rows to prevent massive memory usage and 'Request Entity Too Large' (413) errors
         const previewCount = Math.min(rowCount, 100);
         for (let i = 0; i < previewCount; i++) {
-            preview.push(generateEmployeeData(gender, suminsured));
+            preview.push(generateEmployeeData(gender, suminsured, empCodeLength, empCodeFormat));
         }
         setPreviewData(preview);
-    }, [gender, suminsured, rowCount]);
+    }, [gender, suminsured, rowCount, empCodeLength, empCodeFormat]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -49,6 +51,8 @@ export default function Home() {
             formData.append('gender', gender);
             formData.append('suminsured', suminsured.toString());
             formData.append('rows', rowCount.toString());
+            formData.append('empCodeLength', empCodeLength.toString());
+            formData.append('empCodeFormat', empCodeFormat);
             // Send only the generated preview rows (capped) to avoid large payload errors
             formData.append('preview', JSON.stringify(previewData));
 
@@ -149,6 +153,45 @@ export default function Home() {
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
                         </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label htmlFor="empCodeFormat" className={styles.label}>
+                            Employee Code Format
+                        </label>
+                        <select
+                            id="empCodeFormat"
+                            className={styles.select}
+                            value={empCodeFormat}
+                            onChange={(e) => setEmpCodeFormat(e.target.value)}
+                        >
+                            <option value="alphanumeric">Alphanumeric</option>
+                            <option value="alphabet">Alphabets Only</option>
+                            <option value="numeric">Numbers Only</option>
+                        </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label htmlFor="empCodeLength" className={styles.label}>
+                            Employee Code Length (Max 15)
+                        </label>
+                        <input
+                            id="empCodeLength"
+                            type="number"
+                            className={styles.input}
+                            value={empCodeLength}
+                            onChange={(e) => {
+                                const value = Number(e.target.value);
+                                if (Number.isNaN(value)) {
+                                    setEmpCodeLength(9);
+                                    return;
+                                }
+                                const clamped = Math.min(15, Math.max(1, value));
+                                setEmpCodeLength(clamped);
+                            }}
+                            min="1"
+                            max="15"
+                        />
                     </div>
 
                     <div className={styles.formGroup}>
