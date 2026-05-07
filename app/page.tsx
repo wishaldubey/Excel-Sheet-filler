@@ -224,7 +224,7 @@ export default function Home() {
                                     setRowCount(0);
                                     return;
                                 }
-                                const clamped = Math.min(200000, Math.max(0, value));
+                                const clamped = Math.min(2000000, Math.max(0, value));
                                 setRowCount(clamped);
                             }}
                             min="0"
