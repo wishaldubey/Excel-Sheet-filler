@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ExcelJS from 'exceljs';
 import * as XLSX from 'xlsx';
+import { PassThrough } from 'stream';
 import {
     generateEmployeeCode,
     generateRandomFirstName,
@@ -9,6 +10,8 @@ import {
     generateEmail,
     type EmployeeData,
 } from '@/lib/utils';
+
+export const maxDuration = 300; // Allow enough time for 1M records
 
 export async function POST(request: NextRequest) {
     try {
@@ -125,6 +128,26 @@ export async function POST(request: NextRequest) {
             }
         });
 
+        // Set up WorkbookWriter for efficient streaming of massive datasets
+        const passThrough = new PassThrough();
+        const workbookWriterOptions = {
+            stream: passThrough,
+            useStyles: true,
+            useSharedStrings: true
+        };
+        const workbookWriter = new ExcelJS.stream.xlsx.WorkbookWriter(workbookWriterOptions);
+        const worksheetWriter = workbookWriter.addWorksheet(worksheet.name || 'Sheet1');
+
+        // Copy the header row into the stream
+        const newHeaderRow = worksheetWriter.getRow(1);
+        headerRow.eachCell((cell, colNumber) => {
+            newHeaderRow.getCell(colNumber).value = cell.value;
+        });
+        newHeaderRow.commit();
+
+        // Check if there are styling requirements in the template columns we should preserve
+        // For 1M rows, we will apply values natively without loading full rows in memory
+        
         // Parse preview data if provided so Excel matches live preview
         let previewRows: EmployeeData[] | null = null;
         if (previewRaw) {
@@ -142,7 +165,7 @@ export async function POST(request: NextRequest) {
         console.log('Filling rows from', startRow, 'to', endRow);
 
         for (let rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
-            const row = worksheet.getRow(rowIndex);
+            const row = worksheetWriter.getRow(rowIndex);
 
             const previewIndex = rowIndex - startRow;
             const previewEmployee = previewRows && previewRows[previewIndex];
@@ -212,16 +235,30 @@ export async function POST(request: NextRequest) {
             row.commit();
         }
 
-        // Generate Excel buffer
-        const outputBuffer = await workbookExcelJS.xlsx.writeBuffer();
+        // Commit workbook writing properly
+        worksheetWriter.commit();
+        workbookWriter.commit().then(() => {
+            passThrough.end();
+        }).catch(err => {
+            passThrough.destroy(err);
+        });
 
-        // Return the Excel file as a downloadable response
-        return new NextResponse(outputBuffer, {
+        // Convert Node.js stream to Web ReadableStream for Next.js response
+        const readableStream = new ReadableStream({
+            start(controller) {
+                passThrough.on('data', (chunk) => controller.enqueue(chunk));
+                passThrough.on('end', () => controller.close());
+                passThrough.on('error', (err) => controller.error(err));
+            }
+        });
+
+        // Return the Excel file as a downloadable streaming response
+        return new NextResponse(readableStream as any, {
             status: 200,
             headers: {
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'Content-Disposition': 'attachment; filename=output.xlsx',
-                'Content-Length': outputBuffer.byteLength.toString(),
+                // Removed Content-Length because we are streaming unknown length data
             },
         });
     } catch (error) {
