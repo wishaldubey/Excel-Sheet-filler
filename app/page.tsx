@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import { generateEmployeeData, type EmployeeData } from '@/lib/utils';
+import AdsenseAd from './components/AdsenseAd';
 
 export default function Home() {
+    const adsenseSlotId = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ID ?? '';
     const [gender, setGender] = useState<string>('Male');
     const [suminsured, setSuminsured] = useState<number>(500000);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -468,6 +470,10 @@ export default function Home() {
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div className={styles.adSection}>
+                    <AdsenseAd slot={adsenseSlotId} className={styles.adUnit} />
                 </div>
             </div>
         </div>

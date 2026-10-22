@@ -337,6 +337,16 @@
   cursor: pointer;
 }
 
+.adSection {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px dashed #000000;
+}
+
+.adUnit {
+  min-height: 120px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .container {
