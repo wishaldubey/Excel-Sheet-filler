@@ -3,10 +3,17 @@
 import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import { generateEmployeeData, type EmployeeData } from '@/lib/utils';
-import AdsenseAd from './components/AdsenseAd';
+
+const ADSENSE_CLIENT_ID = 'ca-pub-XXXXXXXXXXXXXXXX';
+const ADSENSE_SLOT_ID = '1234567890';
+
+declare global {
+    interface Window {
+        adsbygoogle?: unknown[];
+    }
+}
 
 export default function Home() {
-    const adsenseSlotId = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ID ?? '';
     const [gender, setGender] = useState<string>('Male');
     const [suminsured, setSuminsured] = useState<number>(500000);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -27,6 +34,14 @@ export default function Home() {
         }
         setPreviewData(preview);
     }, [gender, suminsured, rowCount, empCodeLength, empCodeFormat]);
+
+    useEffect(() => {
+        try {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch (error) {
+            console.error('Adsense ad render failed:', error);
+        }
+    }, []);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -473,7 +488,14 @@ export default function Home() {
                 </div>
 
                 <div className={styles.adSection}>
-                    <AdsenseAd slot={adsenseSlotId} className={styles.adUnit} />
+                    <ins
+                        className={`adsbygoogle ${styles.adUnit}`}
+                        style={{ display: 'block' }}
+                        data-ad-client={ADSENSE_CLIENT_ID}
+                        data-ad-slot={ADSENSE_SLOT_ID}
+                        data-ad-format="auto"
+                        data-full-width-responsive="true"
+                    />
                 </div>
             </div>
         </div>
